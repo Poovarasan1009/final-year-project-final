@@ -1,0 +1,81 @@
+🚀 Using device: cpu
+[INFO] Loading AI models...
+[OK] Semantic model loaded (all-MiniLM-L6-v2)
+[OK] Contextual BERT model loaded
+[OK] Accuracy Engine (synonym-aware) loaded
+
+============================================================
+CRYPTOGRAPHY PARAPHRASE TEST
+============================================================
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [OVERRIDE] Concept-phrase coverage=1.00 — accuracy_boost raised to 0.77
+   [OVERRIDE] Good semantic similarity — concept floor raised to 0.55
+   [RESULT] Final Score: 60.65/100  Grade: C
+   [RESULT] Confidence: 66.3%
+
+[PASS] Cryptography PARAPHRASE (exact user example)
+  Score=60.65/100  Grade=C
+  Semantic=56.18  Conceptual=55.0
+  Feedback: ⚠ Most concepts covered, but try to add: 'branch'. | ⚠ Partially on topic — expand your explanation. | ⚠ Structure could
+  AccuracyScore=0.420  ConceptPhrase=1.000
+  ConceptMatches=['securing information', 'codes', 'communication']
+  SynMatches=[('use', 'practice', 'wordnet_synonym')]
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [OVERRIDE] Concept-phrase coverage=1.00 — accuracy_boost raised to 1.00
+   [OVERRIDE] High semantic similarity — concept floor raised to 0.70
+   [RESULT] Final Score: 95.45/100  Grade: A+
+   [RESULT] Confidence: 80.6%
+
+[PASS] Exact answer - should score very high
+  Score=95.45/100  Grade=A+
+  Semantic=99.55  Conceptual=100.0
+  Feedback: 🌟 Great answer overall! | ✅ Excellent concept coverage. | ❌ Improve structure: Use proper sentences, connecting words (t
+  AccuracyScore=1.000  ConceptPhrase=1.000
+  ConceptMatches=['securing information', 'codes', 'communication']
+  SynMatches=[]
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [RESULT] Final Score: 18.86/100  Grade: F
+   [RESULT] Confidence: 45.5%
+
+[PASS] Wrong topic - should stay LOW
+  Score=18.86/100  Grade=F
+  Semantic=23.67  Conceptual=0.0
+  Feedback: ❌ Key concepts missing: 'food, sunlight, process'. Add these to your answer. | ❌ Answer meaning is quite different from 
+  AccuracyScore=0.139  ConceptPhrase=0.000
+  ConceptMatches=[]
+  SynMatches=[]
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [RESULT] Final Score: 59.0/100  Grade: D
+   [RESULT] Confidence: 46.4%
+
+[PASS] Different words, same meaning (general)
+  Score=59.0/100  Grade=D
+  Semantic=78.67  Conceptual=3.0
+  Feedback: ❌ Key concepts missing: 'computers, machine, data'. Add these to your answer. | ⚠ Structure could be improved — add conn
+  AccuracyScore=0.045  ConceptPhrase=0.000
+  ConceptMatches=[]
+  SynMatches=[]
+
+============================================================
+ALL OK
+============================================================

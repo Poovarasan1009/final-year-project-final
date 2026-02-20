@@ -1,0 +1,88 @@
+🚀 Using device: cpu
+[INFO] Loading AI models...
+[OK] Semantic model loaded (all-MiniLM-L6-v2)
+[OK] Contextual BERT model loaded
+[OK] Accuracy Engine (synonym-aware) loaded
+============================================================
+ANSWER EVALUATION SYSTEM - ACCURACY TEST SUITE
+============================================================
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [OVERRIDE] High semantic similarity — concept floor raised to 0.70
+   [RESULT] Final Score: 70.38/100  Grade: B
+   [RESULT] Confidence: 79.3%
+
+[PASS] Test 1: Synonym: automobile = car
+  Score: 70.38/100  Grade: B  Marks: 7.0/10  Confidence: 79.3%
+  Synonym matches detected: [('vehicle', 'car'), ('automobile', 'car')]
+  Missing concepts: ['motorized', 'transportation']
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [OVERRIDE] High semantic similarity — concept floor raised to 0.70
+   [RESULT] Final Score: 69.17/100  Grade: C
+   [RESULT] Confidence: 71.1%
+
+[PASS] Test 2: Correct answer - should score good (paraphrase)
+  Score: 69.17/100  Grade: C  Marks: 6.9/10  Confidence: 71.1%
+  Missing concepts: ['gases', 'advantages', 'greenhouse', 'costs']
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [OVERRIDE] High semantic similarity — concept floor raised to 0.70
+   [RESULT] Final Score: 47.28/100  Grade: E
+   [RESULT] Confidence: 60.9%
+
+[FAIL] Test 3: Wrong answer - should score LOW
+  Score: 47.28/100  Grade: E  Marks: 4.7/10  Confidence: 60.9%
+  Missing concepts: ['sunlight', 'need', 'well', 'affects']
+
+[PASS] Test 4: Empty answer - should score 0
+  Score: 0.0/100  Grade: F  Marks: 0.0/10  Confidence: 0.0%
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [OVERRIDE] High semantic similarity — concept floor raised to 0.70
+   [RESULT] Final Score: 72.62/100  Grade: B
+   [RESULT] Confidence: 75.2%
+
+[PASS] Test 5: Synonym: rapid = fast
+  Score: 72.62/100  Grade: B  Marks: 7.3/10  Confidence: 75.2%
+  Synonym matches detected: [('fast', 'rapid'), ('completes', 'finishes'), ('algorithm', 'method')]
+  Missing concepts: ['complexity', 'performance', 'describe']
+
+============================================================
+GRADE BAND TESTS
+============================================================
+  OK Score 95 -> Grade A+ (Outstanding)
+  OK Score 83 -> Grade A (Excellent)
+  OK Score 72 -> Grade B (Good)
+  OK Score 65 -> Grade C (Average)
+  OK Score 52 -> Grade D (Below Average)
+  OK Score 40 -> Grade E (Poor)
+  OK Score 20 -> Grade F (Fail)
+
+============================================================
+SYNONYM ENGINE TESTS
+============================================================
+  OK 'automobile' synonym of 'car'? Expected=True, Got=True
+  OK 'rapid' synonym of 'fast'? Expected=True, Got=True
+  OK 'happy' synonym of 'planet'? Expected=False, Got=False
+  OK 'purchase' synonym of 'buy'? Expected=True, Got=True
+
+============================================================
+SOME TESTS FAILED - check above
+============================================================

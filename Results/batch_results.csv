@@ -1,0 +1,6 @@
+question,student_answer,ai_score,human_score,difference,feedback
+What is machine learning?,Machine learning is when computers learn from data without being programmed....,70.82,85,14.180000000000007,Focus on key concepts like 'learn' | Improve answer structure with connecting words and clear paragraphs
+Explain photosynthesis,"Photosynthesis is how plants make food using sunlight, water and carbon dioxide....",68.79,78,9.209999999999994,Focus on key concepts like 'sunlight'
+What are the advantages of renewable energy?,Renewable energy is good because it doesn't pollute and won't run out....,59.58,72,12.420000000000002,Focus on key concepts like 'energy' | Address points related to 'are'
+Define artificial intelligence,AI is making computers smart like humans to solve problems....,43.16,80,36.84,Focus on key concepts like 'machines' | Improve answer structure with connecting words and clear paragraphs | Address points related to 'define'
+Explain Newton's first law of motion,"If something is moving, it keeps moving unless something stops it....",44.8,75,30.200000000000003,Focus on key concepts like 'same' | Improve answer structure with connecting words and clear paragraphs | Address points related to 'newton'

@@ -1,0 +1,53 @@
+﻿
+=================================================================
+TESTING ADVANCED ANSWER EVALUATOR (Production Grade)
+=================================================================
+python : Traceback (most recent 
+call last):
+At line:1 char:26
++ ... pts\activate; python Advanc
+ed_Core\advanced_evaluator.py 
+2>&1 | Out-F ...
++                   ~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~
+    + CategoryInfo          : No 
+   tSpecified: (Traceback (most  
+   recent call last)::String)    
+ [], RemoteException
+    + FullyQualifiedErrorId : Na 
+   tiveCommandError
+ 
+  File "C:\Users\spk08\OneDrive\D
+ocuments\pro\answer_evaluation_sy
+stem\Advanced_Core\advanced_evalu
+ator.py", line 854, in <module>
+    test_evaluator()
+  File "C:\Users\spk08\OneDrive\D
+ocuments\pro\answer_evaluation_sy
+stem\Advanced_Core\advanced_evalu
+ator.py", line 788, in 
+test_evaluator
+    evaluator = 
+AdvancedAnswerEvaluator()
+                
+^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\spk08\OneDrive\D
+ocuments\pro\answer_evaluation_sy
+stem\Advanced_Core\advanced_evalu
+ator.py", line 69, in __init__
+    print(f"\U0001f680 Using 
+device: {self.device}")
+  File "C:\Users\spk08\AppData\Lo
+cal\Programs\Python\Python311\Lib
+\encodings\cp1252.py", line 19, 
+in encode
+    return codecs.charmap_encode(
+input,self.errors,encoding_table)
+[0]
+           ^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' 
+codec can't encode character 
+'\U0001f680' in position 0: 
+character maps to <undefined>

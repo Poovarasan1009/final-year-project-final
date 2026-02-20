@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Answer Question - Student Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .answer-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border: none;
+            overflow: hidden;
+        }
+
+        .question-header {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            color: white;
+            padding: 30px;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            border-color: #4f46e5;
+        }
+
+        .btn-primary {
+            background-color: #4f46e5;
+            border-color: #4f46e5;
+        }
+
+        .btn-primary:hover {
+            background-color: #4338ca;
+            border-color: #4338ca;
+        }
+
+        .info-pill {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-right: 10px;
+            display: inline-block;
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Back Button -->
+                <a href="/student/questions" class="text-decoration-none text-muted mb-3 d-inline-block">
+                    <i class="fas fa-arrow-left"></i> Back to Questions
+                </a>
+
+                <div class="card answer-card">
+                    <div class="question-header">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="info-pill"><i class="fas fa-book"></i> {{ question.subject }}</span>
+                                <span class="info-pill"><i class="fas fa-tag"></i> {{ question.topic }}</span>
+                            </div>
+                            <span class="badge bg-light text-primary fs-6">{{ question.marks }} Marks</span>
+                        </div>
+                        <h3 class="mt-3 mb-0">{{ question.question_text }}</h3>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <form id="answerForm">
+                            <input type="hidden" id="questionId" value="{{ question.id }}">
+
+                            <div class="mb-4">
+                                <label for="answerText" class="form-label fw-bold text-secondary">Your Answer</label>
+                                <div class="position-relative">
+                                    <textarea class="form-control" id="answerText" rows="8"
+                                        placeholder="Type your detailed answer here..." required
+                                        style="resize: vertical; padding-right: 50px;"></textarea>
+                                    <button type="button" id="voiceBtn"
+                                        class="btn btn-light position-absolute end-0 top-0 m-2 rounded-circle"
+                                        title="Use Voice Input" style="width: 40px; height: 40px;">
+                                        <i class="fas fa-microphone text-primary"></i>
+                                    </button>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted" id="voiceStatus">Click microphone to speak</small>
+                                    <div class="form-text text-muted" id="charCount">0 characters</div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg py-3" id="submitBtn">
+                                    <i class="fas fa-paper-plane me-2"></i> Submit for AI Evaluation
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- AI Feedback Container (Hidden initially) -->
+                        <div id="feedbackContainer" class="mt-4 d-none">
+                            <hr class="my-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="mb-0"><i class="fas fa-robot text-primary"></i> AI Evaluation Result</h4>
+                                <span id="topBadge" class="badge bg-warning text-dark d-none">
+                                    <i class="fas fa-crown"></i> Top 1% Candidate
+                                </span>
+                            </div>
+
+                            <div class="alert alert-light border shadow-sm">
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="display-4 fw-bold text-primary" id="scoreDisplay">0</div>
+                                        <small class="text-muted">Score</small>
+                                    </div>
+                                    <div class="col-4 border-start border-end">
+                                        <div class="display-6 fw-bold text-success mt-2" id="confidenceDisplay">0%</div>
+                                        <small class="text-muted">Confidence</small>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="mt-2 fs-5" id="gradeDisplay">-</div>
+                                        <small class="text-muted">Grade</small>
+                                    </div>
+                                </div>
+
+                                <!-- Radar Chart and Layer Details -->
+                                <div class="row mb-4">
+                                    <!-- Smaller Diamond Graph -->
+                                    <div class="col-md-5 d-flex align-items-center justify-content-center">
+                                        <div style="height: 250px; width: 100%;">
+                                            <canvas id="layerChart"></canvas>
+                                        </div>
+                                    </div>
+
+                                    <!-- Layer Output Boxes -->
+                                    <div class="col-md-7">
+                                        <h6 class="text-muted mb-3"><i class="fas fa-list-ul"></i> Layer Diagnostics
+                                        </h6>
+                                        <div class="row g-2">
+                                            <!-- Conceptual -->
+                                            <div class="col-6">
+                                                <div class="p-2 border rounded bg-light h-100">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <small class="fw-bold text-primary">Conceptual</small>
+                                                        <span class="badge bg-primary" id="scoreConcept">--</span>
+                                                    </div>
+                                                    <p class="mb-0" style="font-size: 0.75rem;" id="detailConcept">
+                                                        Checking keywords...</p>
+                                                </div>
+                                            </div>
+                                            <!-- Semantic -->
+                                            <div class="col-6">
+                                                <div class="p-2 border rounded bg-light h-100">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <small class="fw-bold text-success">Semantic</small>
+                                                        <span class="badge bg-success" id="scoreSemantic">--</span>
+                                                    </div>
+                                                    <p class="mb-0" style="font-size: 0.75rem;" id="detailSemantic">
+                                                        Checking meaning...</p>
+                                                </div>
+                                            </div>
+                                            <!-- Structural -->
+                                            <div class="col-6">
+                                                <div class="p-2 border rounded bg-light h-100">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <small class="fw-bold text-warning text-dark">Structural</small>
+                                                        <span class="badge bg-warning text-dark"
+                                                            id="scoreStructural">--</span>
+                                                    </div>
+                                                    <p class="mb-0" style="font-size: 0.75rem;" id="detailStructural">
+                                                        Checking grammar...</p>
+                                                </div>
+                                            </div>
+                                            <!-- Completeness -->
+                                            <div class="col-6">
+                                                <div class="p-2 border rounded bg-light h-100">
+                                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                                        <small class="fw-bold text-info text-dark">Completeness</small>
+                                                        <span class="badge bg-info text-dark"
+                                                            id="scoreCompleteness">--</span>
+                                                    </div>
+                                                    <p class="mb-0" style="font-size: 0.75rem;" id="detailCompleteness">
+                                                        Checking coverage...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="p-3 bg-white rounded">
+                                    <strong><i class="fas fa-comment-dots text-secondary"></i> Feedback:</strong>
+                                    <p class="mb-0 mt-2 text-dark" id="feedbackText"></p>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <a href="/student/questions" class="btn btn-outline-secondary">Return to List</a>
+                                <button onclick="location.reload()" class="btn btn-outline-primary ms-2">Try
+                                    Again</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered text-center">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body">
+                    <div class="spinner-border text-light" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5 class="text-white mt-3">Analyzing your answer...</h5>
+                    <p class="text-white-50">Checking semantics, structure, and concepts.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Character Count
+        document.getElementById('answerText').addEventListener('input', function () {
+            document.getElementById('charCount').textContent = this.value.length + ' characters';
+        });
+
+        // Voice Input (Speech to Text)
+        const voiceBtn = document.getElementById('voiceBtn');
+        const voiceStatus = document.getElementById('voiceStatus');
+        let recognition = null;
+
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function () {
+                voiceBtn.classList.remove('btn-light');
+                voiceBtn.classList.add('btn-danger');
+                voiceStatus.textContent = "Listening...";
+            };
+
+            recognition.onend = function () {
+                voiceBtn.classList.remove('btn-danger');
+                voiceBtn.classList.add('btn-light');
+                voiceStatus.textContent = "Click microphone to speak";
+            };
+
+            recognition.onresult = function (event) {
+                const transcript = event.results[0][0].transcript;
+                const textarea = document.getElementById('answerText');
+                textarea.value += (textarea.value.length > 0 ? ' ' : '') + transcript;
+                textarea.dispatchEvent(new Event('input')); // Update char count
+            };
+
+            voiceBtn.addEventListener('click', function () {
+                if (voiceBtn.classList.contains('btn-danger')) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        } else {
+            voiceBtn.style.display = 'none';
+            voiceStatus.textContent = "Voice input not supported in this browser";
+        }
+
+        let radarChart = null;
+
+        document.getElementById('answerForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const questionId = document.getElementById('questionId').value;
+            const answerText = document.getElementById('answerText').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+
+            submitBtn.disabled = true;
+            loadingModal.show();
+
+            // Console log for debugging
+            console.log("Submitting answer for Question ID:", questionId);
+
+            try {
+                const response = await fetch('/api/student/submit-answer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question_id: parseInt(questionId),
+                        answer_text: answerText
+                    })
+                });
+
+                console.log("Response status:", response.status);
+
+                // Handle non-JSON errors (e.g. 500 Internal Server Error HTML)
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}...`);
+                }
+
+                const result = await response.json();
+                console.log("Received result:", result);
+
+                // Hide modal immediately after receiving response
+                loadingModal.hide();
+
+                // Small delay to allow modal to fade
+                await new Promise(r => setTimeout(r, 300));
+
+                if (result.success) {
+                    try {
+                        // Show feedback container
+                        const feedbackContainer = document.getElementById('feedbackContainer');
+                        feedbackContainer.classList.remove('d-none');
+                        document.getElementById('answerForm').classList.add('d-none'); // Hide form
+
+                        // Scroll to feedback
+                        feedbackContainer.scrollIntoView({ behavior: 'smooth' });
+
+                        // Basic Scores
+                        document.getElementById('scoreDisplay').textContent = Math.round(result.final_score || result.score || 0);
+                        document.getElementById('confidenceDisplay').textContent = Math.round(result.confidence || 0) + '%';
+
+                        if (result.feedback) {
+                            document.getElementById('feedbackText').innerHTML = result.feedback.replace(/\n/g, '<br>');
+                        } else {
+                            document.getElementById('feedbackText').textContent = "No specific feedback provided.";
+                        }
+
+                        // Grade Logic
+                        let grade = 'F';
+                        const score = result.final_score || result.score || 0;
+                        if (score >= 90) grade = 'A+';
+                        else if (score >= 80) grade = 'A';
+                        else if (score >= 70) grade = 'B';
+                        else if (score >= 60) grade = 'C';
+                        else if (score >= 50) grade = 'D';
+
+                        const gradeEl = document.getElementById('gradeDisplay');
+                        if (gradeEl) {
+                            gradeEl.textContent = grade;
+                            gradeEl.className = 'mt-2 fs-5 ' +
+                                ((grade === 'A+' || grade === 'A') ? 'text-success' :
+                                    (grade === 'B' || grade === 'C') ? 'text-warning' : 'text-danger');
+                        }
+
+                        if (score >= 90) {
+                            const topBadge = document.getElementById('topBadge');
+                            if (topBadge) topBadge.classList.remove('d-none');
+                        }
+
+                        // Layer Scores - Safety Check
+                        const layerScores = result.layer_scores || {};
+                        const safeScore = (val) => Math.round(val || 0);
+
+                        // Populate Layer Boxes (Check if elements exist first)
+                        const setScore = (id, val) => {
+                            const el = document.getElementById(id);
+                            if (el) el.textContent = safeScore(val) + '%';
+                        };
+
+                        setScore('scoreConcept', layerScores.conceptual);
+                        setScore('scoreSemantic', layerScores.semantic);
+                        setScore('scoreStructural', layerScores.structural);
+                        setScore('scoreCompleteness', layerScores.completeness);
+
+                        // Update Details Text
+                        const details = result.details || {};
+                        const setDetail = (id, val, defaultText) => {
+                            const el = document.getElementById(id);
+                            if (el) {
+                                el.textContent = (typeof val === 'string' && val.length > 5) ? val : defaultText;
+                            }
+                        };
+
+                        setDetail('detailConcept', details.conceptual, "Key terms usage matches ideal answer.");
+                        setDetail('detailSemantic', details.semantic, "Meaning alignment with model answer.");
+                        setDetail('detailStructural', details.structural, "Grammar, sentence structure & fluidity.");
+                        setDetail('detailCompleteness', details.completeness, "Coverage of all required points.");
+
+
+                        // Render Radar Chart
+                        const canvas = document.getElementById('layerChart');
+                        if (canvas) {
+                            const ctx = canvas.getContext('2d');
+                            if (radarChart) radarChart.destroy();
+
+                            radarChart = new Chart(ctx, {
+                                type: 'radar',
+                                data: {
+                                    labels: ['Conceptual', 'Semantic', 'Structural', 'Completeness'],
+                                    datasets: [{
+                                        label: 'Student Performance Profile',
+                                        data: [
+                                            safeScore(layerScores.conceptual),
+                                            safeScore(layerScores.semantic),
+                                            safeScore(layerScores.structural),
+                                            safeScore(layerScores.completeness)
+                                        ],
+                                        backgroundColor: 'rgba(79, 70, 229, 0.25)',
+                                        borderColor: '#4f46e5',
+                                        borderWidth: 3,
+                                        pointBackgroundColor: '#4f46e5',
+                                        pointBorderColor: '#fff',
+                                        pointHoverBackgroundColor: '#fff',
+                                        pointHoverBorderColor: '#4f46e5',
+                                        pointRadius: 5
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                            position: 'bottom',
+                                            labels: {
+                                                font: { size: 12 } // Minimal font size
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        r: {
+                                            angleLines: {
+                                                display: true,
+                                                color: 'rgba(0, 0, 0, 0.1)'
+                                            },
+                                            suggestedMin: 0,
+                                            suggestedMax: 100,
+                                            grid: {
+                                                color: 'rgba(0, 0, 0, 0.1)'
+                                            },
+                                            pointLabels: {
+                                                font: {
+                                                    size: 11, // Smaller labels
+                                                    weight: 'bold',
+                                                    family: "'Inter', sans-serif"
+                                                },
+                                                color: '#4b5563'
+                                            },
+                                            ticks: {
+                                                backdropColor: 'transparent',
+                                                stepSize: 25,
+                                                display: false // Hide numbers for cleaner look
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            console.error("Canvas element 'layerChart' not found!");
+                        }
+
+                    } catch (renderError) {
+                        console.error("Error rendering results:", renderError);
+                        alert("Results received, but failed to display graph. See console.");
+                    }
+
+                } else {
+                    alert('Error submitting answer: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Submission Error:', error);
+
+                // Force close modal in case of error
+                try { loadingModal.hide(); } catch (e) { }
+
+                alert('Submission failed. See console for details.\nError: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                // Double check modal is hidden
+                const modalEl = document.getElementById('loadingModal');
+                if (modalEl && modalEl.classList.contains('show')) {
+                    try { loadingModal.hide(); } catch (e) { }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

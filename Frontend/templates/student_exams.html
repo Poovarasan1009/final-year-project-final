@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Exams - AI Eval System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#4F46E5', secondary: '#10B981', dark: '#1F2937' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-link.active {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4F46E5;
+            border-right: 3px solid #4F46E5;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col z-10 shadow-lg">
+            <div class="p-6 flex items-center gap-3 border-b border-gray-100">
+                <i class="fas fa-brain text-2xl text-primary"></i>
+                <span class="text-xl font-bold tracking-tight text-gray-900">AI Eval</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul class="space-y-1">
+                    <li><a href="/student"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-home w-6"></i><span class="font-medium">Dashboard</span></a></li>
+                    <li><a href="/student/exams"
+                            class="sidebar-link active flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-book w-6"></i><span class="font-medium">My Exams</span></a></li>
+                    <li><a href="/student/questions"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-question-circle w-6"></i><span class="font-medium">Practice
+                                Questions</span></a></li>
+                    <li><a href="/student/performance"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-chart-line w-6"></i><span class="font-medium">Performance</span></a></li>
+                    <li><a href="/student/feedback"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-comments w-6"></i><span class="font-medium">Feedback History</span></a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-gray-100">
+                <div class="flex items-center gap-3 mb-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-indigo-400 flex items-center justify-center text-white font-bold">
+                        {{ student_name[:1] }}</div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">{{ student_name }}</p>
+                        <p class="text-xs text-gray-500">Student</p>
+                    </div>
+                </div>
+                <a href="/logout"
+                    class="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 relative">
+            <div
+                class="absolute top-0 left-0 w-full h-56 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 -z-10">
+            </div>
+
+            <div class="container mx-auto px-6 py-8 max-w-7xl">
+                <!-- Header -->
+                <header class="flex justify-between items-center mb-8 text-white">
+                    <div>
+                        <h1 class="text-3xl font-bold">My Exams</h1>
+                        <p class="text-indigo-200 mt-1">View and take your scheduled exams</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-2 rounded-full">
+                            <i class="fas fa-clipboard-list mr-1"></i> {{ exams | length }} Exam{{ 's' if exams | length
+                            != 1 else '' }}
+                        </span>
+                    </div>
+                </header>
+
+                <!-- Exams Grid -->
+                {% if exams %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for exam in exams %}
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                        <!-- Card Header -->
+                        <div class="p-5 border-b border-gray-100">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-800">{{ exam.title }}</h3>
+                                    <p class="text-sm text-gray-500 mt-1">{{ exam.description or 'No description' }}</p>
+                                </div>
+                                {% if exam.status == 'completed' %}
+                                <span
+                                    class="shrink-0 px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">
+                                    <i class="fas fa-check mr-1"></i>Done
+                                </span>
+                                {% elif exam.status == 'in_progress' %}
+                                <span
+                                    class="shrink-0 px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">
+                                    <i class="fas fa-spinner fa-spin mr-1"></i>In Progress
+                                </span>
+                                {% else %}
+                                <span
+                                    class="shrink-0 px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">
+                                    Not Started
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Card Details -->
+                        <div class="p-5 space-y-3">
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-clock w-5 text-indigo-400"></i>
+                                <span>Duration: <strong>{{ exam.duration_minutes }} mins</strong></span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-user-tie w-5 text-indigo-400"></i>
+                                <span>Teacher: {{ exam.teacher_name }}</span>
+                            </div>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-calendar w-5 text-indigo-400"></i>
+                                <span>{{ exam.start_time[:10] if exam.start_time else 'TBD' }}</span>
+                            </div>
+
+                            {% if exam.status == 'completed' and exam.score %}
+                            <div class="flex items-center text-sm">
+                                <i class="fas fa-star w-5 text-yellow-400"></i>
+                                <span
+                                    class="font-bold {{ 'text-green-600' if exam.score >= 80 else 'text-yellow-600' }}">Score:
+                                    {{ exam.score }}%</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Card Action -->
+                        <div class="px-5 py-4 bg-gray-50 border-t border-gray-100">
+                            {% if exam.status != 'completed' %}
+                            {% if exam.is_open %}
+                            <a href="/student/exam/{{ exam.id }}"
+                                class="w-full block text-center bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm">
+                                <i class="fas fa-play mr-1"></i> Start Exam
+                            </a>
+                            {% else %}
+                            <button disabled
+                                class="w-full bg-gray-300 text-gray-500 px-4 py-2.5 rounded-lg cursor-not-allowed font-medium text-sm">
+                                <i class="fas fa-lock mr-1"></i> Exam Closed
+                            </button>
+                            {% endif %}
+                            {% else %}
+                            <button
+                                class="w-full bg-green-50 text-green-700 px-4 py-2.5 rounded-lg font-medium text-sm border border-green-200">
+                                <i class="fas fa-eye mr-1"></i> View Results
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                    <i class="fas fa-clipboard text-5xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 text-lg">No exams scheduled yet.</p>
+                    <p class="text-gray-400 text-sm mt-1">Your teacher will assign exams when they're ready.</p>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

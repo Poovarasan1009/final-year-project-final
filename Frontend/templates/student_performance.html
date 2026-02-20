@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance - AI Eval System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#4F46E5', secondary: '#10B981', dark: '#1F2937' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-link.active {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4F46E5;
+            border-right: 3px solid #4F46E5;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col z-10 shadow-lg">
+            <div class="p-6 flex items-center gap-3 border-b border-gray-100">
+                <i class="fas fa-brain text-2xl text-primary"></i>
+                <span class="text-xl font-bold tracking-tight text-gray-900">AI Eval</span>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul class="space-y-1">
+                    <li><a href="/student"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-home w-6"></i><span class="font-medium">Dashboard</span></a></li>
+                    <li><a href="/student/exams"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-book w-6"></i><span class="font-medium">My Exams</span></a></li>
+                    <li><a href="/student/questions"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-question-circle w-6"></i><span class="font-medium">Practice
+                                Questions</span></a></li>
+                    <li><a href="/student/performance"
+                            class="sidebar-link active flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-chart-line w-6"></i><span class="font-medium">Performance</span></a></li>
+                    <li><a href="/student/feedback"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors"><i
+                                class="fas fa-comments w-6"></i><span class="font-medium">Feedback History</span></a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-gray-100">
+                <div class="flex items-center gap-3 mb-4">
+                    <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-indigo-400 flex items-center justify-center text-white font-bold">
+                        {{ student_name[:1] }}</div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">{{ student_name }}</p>
+                        <p class="text-xs text-gray-500">Student</p>
+                    </div>
+                </div>
+                <a href="/logout"
+                    class="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition-colors"><i
+                        class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 relative">
+            <div
+                class="absolute top-0 left-0 w-full h-56 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 -z-10">
+            </div>
+
+            <div class="container mx-auto px-6 py-8 max-w-7xl">
+                <!-- Header -->
+                <header class="flex justify-between items-center mb-8 text-white">
+                    <div>
+                        <h1 class="text-3xl font-bold">My Performance</h1>
+                        <p class="text-indigo-200 mt-1">AI-powered analytics & insights</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-2 rounded-full">
+                            <i class="fas fa-chart-line mr-1"></i> {{ analytics.total_answers }} Evaluations
+                        </span>
+                    </div>
+                </header>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Average Score
+                                </p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">{{ analytics.avg_score }}%</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center">
+                                <i class="fas fa-star text-indigo-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Total Answers
+                                </p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">{{ analytics.total_answers }}</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center">
+                                <i class="fas fa-pen text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Best Score</p>
+                                {% set best = analytics.history | map(attribute='score') | list | sort | last if
+                                analytics.history else 0 %}
+                                <p class="text-3xl font-bold text-gray-900 mt-1">{{ best or 0 }}%</p>
+                            </div>
+                            <div class="w-12 h-12 rounded-lg bg-yellow-50 flex items-center justify-center">
+                                <i class="fas fa-trophy text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h5 class="text-lg font-semibold text-gray-700 mb-4"><i
+                                class="fas fa-chart-area text-indigo-500 mr-2"></i>Performance History</h5>
+                        <canvas id="growthChart" height="250"></canvas>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h5 class="text-lg font-semibold text-gray-700 mb-4"><i
+                                class="fas fa-bullseye text-pink-500 mr-2"></i>AI Skill Radar</h5>
+                        <canvas id="radarChart" height="250"></canvas>
+                        <p class="text-xs text-gray-400 mt-4 text-center">Based on NLP layer analysis</p>
+                    </div>
+                </div>
+
+                <!-- Recent History Table -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <h5 class="text-lg font-semibold text-gray-700"><i
+                                class="fas fa-history text-gray-400 mr-2"></i>Recent Evaluations</h5>
+                    </div>
+                    <table class="min-w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Date</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Subject</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Score</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    AI Layers</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            {% for item in analytics.history %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ item.date[:10] if
+                                    item.date else 'N/A' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{
+                                    item.subject }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span
+                                        class="text-sm font-bold {{ 'text-green-600' if item.score >= 80 else ('text-yellow-600' if item.score >= 50 else 'text-red-500') }}">{{
+                                        item.score }}%</span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs mr-1">C: {{
+                                        item.layers.get('conceptual', 'N/A') }}</span>
+                                    <span class="px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs">S: {{
+                                        item.layers.get('semantic', 'N/A') }}</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-10 text-center text-gray-400">
+                                    <i class="fas fa-chart-bar text-3xl mb-3 block"></i>
+                                    No evaluations yet. Submit some answers to see your performance!
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const history = {{ analytics.history | tojson }};
+        const labels = history.map(h => h.date ? h.date.substring(0, 10) : '');
+        const scores = history.map(h => h.score || 0);
+
+        new Chart(document.getElementById('growthChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Answer Score',
+                    data: scores,
+                    borderColor: '#4F46E5',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(79, 70, 229, 0.08)',
+                    pointBackgroundColor: '#4F46E5',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, max: 100 } }
+            }
+        });
+
+        // Aggregate radar data from history
+        let concepts = [], semantics = [], structures = [], completeness = [];
+        history.forEach(h => {
+            if (h.layers) {
+                if (h.layers.conceptual) concepts.push(h.layers.conceptual);
+                if (h.layers.semantic) semantics.push(h.layers.semantic);
+                if (h.layers.structural) structures.push(h.layers.structural);
+                if (h.layers.completeness) completeness.push(h.layers.completeness);
+            }
+        });
+        const avg = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 50;
+
+        new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: ['Conceptual', 'Semantic', 'Structural', 'Completeness'],
+                datasets: [{
+                    label: 'Your Skills',
+                    data: [avg(concepts), avg(semantics), avg(structures), avg(completeness)],
+                    backgroundColor: 'rgba(236, 72, 153, 0.15)',
+                    borderColor: 'rgba(236, 72, 153, 1)',
+                    pointBackgroundColor: 'rgba(236, 72, 153, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { r: { angleLines: { display: false }, suggestedMin: 0, suggestedMax: 100 } }
+            }
+        });
+    </script>
+</body>
+
+</html>

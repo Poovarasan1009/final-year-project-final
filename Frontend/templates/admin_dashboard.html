@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - AI Eval System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#4F46E5', // Indigo-600
+                        secondary: '#10B981', // Emerald-500
+                        dark: '#111827',     // Gray-900
+                        darker: '#030712',   // Gray-950
+                        surface: '#1F2937',  // Gray-800
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-100 text-gray-800 font-sans antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar (Dark Theme for Admin) -->
+        <aside class="w-64 bg-darker text-gray-300 hidden md:flex flex-col z-20 shadow-xl">
+            <div class="h-16 flex items-center px-6 border-b border-gray-800">
+                <i class="fas fa-shield-alt text-2xl text-primary mr-3"></i>
+                <span class="text-xl font-bold tracking-tight text-white">Admin<span
+                        class="text-primary">Core</span></span>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-6">
+                <div class="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Main</div>
+                <ul class="space-y-1 mb-8">
+                    <li>
+                        <a href="/admin"
+                            class="flex items-center px-6 py-3 bg-gray-900 text-white border-r-4 border-primary transition-colors">
+                            <i class="fas fa-tachometer-alt w-6"></i>
+                            <span class="font-medium">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#"
+                            class="flex items-center px-6 py-3 hover:bg-gray-900 hover:text-white transition-colors">
+                            <i class="fas fa-users w-6"></i>
+                            <span class="font-medium">User Management</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#"
+                            class="flex items-center px-6 py-3 hover:bg-gray-900 hover:text-white transition-colors">
+                            <i class="fas fa-database w-6"></i>
+                            <span class="font-medium">Database</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">System</div>
+                <ul class="space-y-1">
+                    <li>
+                        <a href="#"
+                            class="flex items-center px-6 py-3 hover:bg-gray-900 hover:text-white transition-colors">
+                            <i class="fas fa-server w-6"></i>
+                            <span class="font-medium">Server Health</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#"
+                            class="flex items-center px-6 py-3 hover:bg-gray-900 hover:text-white transition-colors">
+                            <i class="fas fa-cogs w-6"></i>
+                            <span class="font-medium">Settings</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#"
+                            class="flex items-center px-6 py-3 hover:bg-gray-900 hover:text-white transition-colors">
+                            <i class="fas fa-file-alt w-6"></i>
+                            <span class="font-medium">Logs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="p-4 border-t border-gray-800">
+                <div class="flex items-center gap-3">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=random"
+                        class="w-10 h-10 rounded-full border border-gray-600">
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-sm font-semibold text-white truncate">{{ admin_name }}</p>
+                        <p class="text-xs text-green-400 flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Online
+                        </p>
+                    </div>
+                    <a href="/logout" class="text-gray-500 hover:text-white transition-colors" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-100 relative">
+            <!-- Top Navigation -->
+            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-8 sticky top-0 z-10">
+                <h2 class="text-xl font-bold text-gray-800">System Overview</h2>
+                <div class="flex items-center gap-4">
+                    <button class="p-2 text-gray-400 hover:text-primary transition-colors relative">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <button class="p-2 text-gray-400 hover:text-primary transition-colors">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-8 max-w-7xl mx-auto">
+                <!-- KPI Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-primary">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Total Users</p>
+                                <h3 class="text-3xl font-bold text-gray-900 mt-1">124</h3>
+                            </div>
+                            <div class="p-2 bg-indigo-50 rounded text-primary">
+                                <i class="fas fa-users text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-xs font-medium text-green-600 flex items-center">
+                            <i class="fas fa-arrow-up mr-1"></i> 12% vs last month
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-secondary">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Evaluations</p>
+                                <h3 class="text-3xl font-bold text-gray-900 mt-1">1,042</h3>
+                            </div>
+                            <div class="p-2 bg-green-50 rounded text-secondary">
+                                <i class="fas fa-check-circle text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-xs font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-clock mr-1"></i> Avg time: 1.2s
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">System Load</p>
+                                <h3 class="text-3xl font-bold text-gray-900 mt-1">24%</h3>
+                            </div>
+                            <div class="p-2 bg-yellow-50 rounded text-yellow-500">
+                                <i class="fas fa-server text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-4">
+                            <div class="bg-yellow-500 h-1.5 rounded-full" style="width: 24%"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Active Exams</p>
+                                <h3 class="text-3xl font-bold text-gray-900 mt-1">3</h3>
+                            </div>
+                            <div class="p-2 bg-purple-50 rounded text-purple-500">
+                                <i class="fas fa-pencil-alt text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 flex -space-x-2 overflow-hidden">
+                            <img class="inline-block h-6 w-6 rounded-full ring-2 ring-white"
+                                src="https://ui-avatars.com/api/?name=User+1" alt="">
+                            <img class="inline-block h-6 w-6 rounded-full ring-2 ring-white"
+                                src="https://ui-avatars.com/api/?name=User+2" alt="">
+                            <img class="inline-block h-6 w-6 rounded-full ring-2 ring-white"
+                                src="https://ui-avatars.com/api/?name=User+3" alt="">
+                            <div
+                                class="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] text-gray-500 font-medium ring-2 ring-white">
+                                +18</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Main Chart -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-gray-800">Evaluation Traffic</h3>
+                            <select
+                                class="text-sm border-gray-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50">
+                                <option>Last 7 Days</option>
+                                <option>Last 30 Days</option>
+                            </select>
+                        </div>
+                        <canvas id="trafficChart" height="150"></canvas>
+                    </div>
+
+                    <!-- Side Stats -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-gray-800 mb-6">System Health</h3>
+
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">CPU Usage</span>
+                                    <span class="text-sm font-medium text-gray-700">12%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 12%"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Memory</span>
+                                    <span class="text-sm font-medium text-gray-700">45%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 45%"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-sm font-medium text-gray-700">Storage</span>
+                                    <span class="text-sm font-medium text-gray-700">68%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-indigo-500 h-2 rounded-full" style="width: 68%"></div>
+                                </div>
+                            </div>
+
+                            <div class="pt-6 border-t border-gray-100">
+                                <div class="flex items-center gap-4">
+                                    <div class="p-3 rounded-lg bg-red-50 text-red-500">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-900">1 Alert</h4>
+                                        <p class="text-xs text-gray-500">Database backup recommended</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Logs Table -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-800">Recent System Logs</h3>
+                        <button class="text-sm text-primary hover:text-indigo-700 font-medium">View All</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-gray-50 text-gray-500 uppercase font-medium">
+                                <tr>
+                                    <th class="px-6 py-3">Timestamp</th>
+                                    <th class="px-6 py-3">Level</th>
+                                    <th class="px-6 py-3">User</th>
+                                    <th class="px-6 py-3">Action</th>
+                                    <th class="px-6 py-3 text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 font-mono text-gray-500">10:42:15</td>
+                                    <td class="px-6 py-4"><span
+                                            class="px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">INFO</span>
+                                    </td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">System</td>
+                                    <td class="px-6 py-4">Daily maintenance task completed</td>
+                                    <td class="px-6 py-4 text-right"><i class="fas fa-check text-green-500"></i></td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 font-mono text-gray-500">10:38:02</td>
+                                    <td class="px-6 py-4"><span
+                                            class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-bold">AUTH</span>
+                                    </td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">teacher1</td>
+                                    <td class="px-6 py-4">Login successful</td>
+                                    <td class="px-6 py-4 text-right"><i class="fas fa-check text-green-500"></i></td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 font-mono text-gray-500">10:15:22</td>
+                                    <td class="px-6 py-4"><span
+                                            class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-bold">WARN</span>
+                                    </td>
+                                    <td class="px-6 py-4 font-medium text-gray-900">student42</td>
+                                    <td class="px-6 py-4">Multiple failed login attempts</td>
+                                    <td class="px-6 py-4 text-right"><i class="fas fa-exclamation text-yellow-500"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Traffic Chart Configuration
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(79, 70, 229, 0.2)');
+        gradient.addColorStop(1, 'rgba(79, 70, 229, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Answers Evaluated',
+                    data: [65, 59, 80, 81, 56, 95, 120],
+                    borderColor: '#4F46E5',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#4F46E5',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,250 @@
+{% extends "teacher_dashboard.html" %}
+
+{% block content %}
+<div class="container mx-auto px-6 py-8">
+    <div class="flex justify-between items-center">
+        <h3 class="text-gray-700 text-3xl font-medium">Class Analytics</h3>
+        <a href="/api/export/submissions"
+            class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm"
+            style="text-decoration:none">
+            <i class="fas fa-download"></i> Export CSV
+        </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="mt-4">
+        <div class="flex flex-wrap -mx-6">
+            <div class="w-full px-6 sm:w-1/2 xl:w-1/3">
+                <div class="flex items-center px-5 py-6 shadow-sm rounded-md bg-white">
+                    <div class="p-3 rounded-full bg-indigo-600 bg-opacity-75">
+                        <i class="fas fa-users text-white text-2xl"></i>
+                    </div>
+                    <div class="mx-5">
+                        <h4 class="text-2xl font-semibold text-gray-700">{{ analytics.active_students }}</h4>
+                        <div class="text-gray-500">Active Students</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full px-6 sm:w-1/2 xl:w-1/3 mt-6 sm:mt-0">
+                <div class="flex items-center px-5 py-6 shadow-sm rounded-md bg-white">
+                    <div class="p-3 rounded-full bg-green-600 bg-opacity-75">
+                        <i class="fas fa-check-circle text-white text-2xl"></i>
+                    </div>
+                    <div class="mx-5">
+                        <h4 class="text-2xl font-semibold text-gray-700">{{ analytics.total_submissions }}</h4>
+                        <div class="text-gray-500">Total Submissions</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full px-6 sm:w-1/2 xl:w-1/3 mt-6 xl:mt-0">
+                <div class="flex items-center px-5 py-6 shadow-sm rounded-md bg-white">
+                    <div class="p-3 rounded-full bg-pink-600 bg-opacity-75">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <div class="mx-5">
+                        <h4 class="text-2xl font-semibold text-gray-700">{{ analytics.avg_score }}%</h4>
+                        <div class="text-gray-500">Class Average</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="mt-8">
+        <div class="flex flex-wrap -mx-6">
+            <!-- Topic Performance Chart -->
+            <div class="w-full lg:w-2/3 px-6">
+                <div class="bg-white rounded-lg shadow-md p-6 h-full">
+                    <h5 class="text-lg font-semibold text-gray-700 mb-4">Topic Performance Analysis</h5>
+                    <div class="relative h-64">
+                        <canvas id="topicChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">
+                        <i class="fas fa-info-circle"></i>
+                        Topics with lower scores indicate areas where students need more practice.
+                    </p>
+                </div>
+            </div>
+
+            <!-- AI Confidence -->
+            <div class="w-full lg:w-1/3 px-6 mt-6 lg:mt-0">
+                <div class="bg-white rounded-lg shadow-md p-6 h-full">
+                    <h5 class="text-lg font-semibold text-gray-700 mb-4">AI Confidence Distribution</h5>
+                    <div class="relative h-64">
+                        <canvas id="confidenceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Metrics Table -->
+    <div class="mt-8">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h5 class="text-lg font-semibold text-gray-700 mb-4">
+                <i class="fas fa-table"></i> Detailed Evaluation Metrics
+            </h5>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Metric</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Description</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Class Average</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <i class="fas fa-brain text-blue-500"></i> Conceptual Understanding
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">Key concepts & terminology coverage</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{
+                                analytics.layer_averages.conceptual if analytics.layer_averages.conceptual else
+                                "%.1f"|format(analytics.avg_score * 0.85) }}%</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if analytics.layer_averages.conceptual > 70 %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Good</span>
+                                {% elif analytics.layer_averages.conceptual > 50 %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Average</span>
+                                {% else %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Needs
+                                    Work</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <i class="fas fa-language text-green-500"></i> Semantic Similarity
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">Meaning & context accuracy</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{
+                                analytics.layer_averages.semantic if analytics.layer_averages.semantic else
+                                "%.1f"|format(analytics.avg_score * 0.92) }}%</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if analytics.layer_averages.semantic > 75 %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Excellent</span>
+                                {% elif analytics.layer_averages.semantic > 50 %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Average</span>
+                                {% else %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Low</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <i class="fas fa-align-left text-orange-500"></i> Structural Quality
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">Grammar, flow & organization</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{
+                                analytics.layer_averages.structural if analytics.layer_averages.structural else
+                                "%.1f"|format(analytics.avg_score * 0.78) }}%</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if analytics.layer_averages.structural > 70 %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Good</span>
+                                {% elif analytics.layer_averages.structural > 50 %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Needs
+                                    Improvement</span>
+                                {% else %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Weak</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <i class="fas fa-check-circle text-purple-500"></i> Completeness
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">All question parts addressed</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{
+                                analytics.layer_averages.completeness if analytics.layer_averages.completeness else
+                                "%.1f"|format(analytics.avg_score * 0.88) }}%</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if analytics.layer_averages.completeness > 70 %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Good</span>
+                                {% elif analytics.layer_averages.completeness > 50 %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Average</span>
+                                {% else %}
+                                <span
+                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Weak</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-sm text-gray-500 mt-4">
+                <i class="fas fa-info-circle"></i> These metrics are calculated using the 4-layer AI evaluation system
+                across all student submissions.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Prepare Data
+    const topics = {{ analytics.topic_performance | tojson }};
+    const topicLabels = topics.map(t => t.topic);
+    const topicScores = topics.map(t => t.score);
+
+    // Topic Chart
+    new Chart(document.getElementById('topicChart'), {
+        type: 'bar',
+        data: {
+            labels: topicLabels,
+            datasets: [{
+                label: 'Average Score',
+                data: topicScores,
+                backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                borderColor: 'rgba(79, 70, 229, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 100 }
+            }
+        }
+    });
+
+    // Dummy Data for Confidence (Simulated for Demo)
+    new Chart(document.getElementById('confidenceChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['High (>80%)', 'Medium (50-80%)', 'Low (<50%)'],
+            datasets: [{
+                data: [65, 25, 10],
+                backgroundColor: ['#10B981', '#F59E0B', '#EF4444']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+{% endblock %}

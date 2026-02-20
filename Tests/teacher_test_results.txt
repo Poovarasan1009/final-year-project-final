@@ -1,0 +1,24 @@
+TEACHER PORTAL TEST RESULTS
+======================================================================
+Login: OK
+PASS | /teacher | Status=200 | Size=38854
+PASS | /teacher/questions | Status=200 | Size=68247
+PASS | /teacher/create-question | Status=200 | Size=14293
+PASS | /teacher/results | Status=200 | Size=87660
+PASS | /teacher/analytics | Status=200 | Size=23085
+FAIL | /teacher/assignments | Status=404 | Size=207 | Error: <!DOCTYPE html>
+<html>
+
+<head>
+    <title>404 Not Found</title>
+</head>
+
+<body>
+    <h1>404 Not Found</h1>
+    <p>The page you are looking for does not exist.</p>
+    <a href="/">Go Home</a>
+</body>
+
+
+PASS | /teacher/exams | Status=200 | Size=7627
+======================================================================

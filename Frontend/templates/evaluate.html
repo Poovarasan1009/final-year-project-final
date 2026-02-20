@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluate Answer - Top 1% Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .evaluation-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+            margin-top: 30px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .form-section {
+            padding: 30px;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .btn-evaluate {
+            background: linear-gradient(90deg, #2ecc71, #3498db);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-evaluate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .results-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .score-display {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .score-excellent {
+            color: #2ecc71;
+        }
+
+        .score-good {
+            color: #3498db;
+        }
+
+        .score-average {
+            color: #f39c12;
+        }
+
+        .score-poor {
+            color: #e74c3c;
+        }
+
+        .layer-score {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress {
+            height: 20px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .progress-bar-concept {
+            background-color: #3498db;
+        }
+
+        .progress-bar-semantic {
+            background-color: #2ecc71;
+        }
+
+        .progress-bar-structural {
+            background-color: #9b59b6;
+        }
+
+        .progress-bar-completeness {
+            background-color: #f39c12;
+        }
+
+        .feedback-box {
+            background: #fff8e1;
+            border-left: 5px solid #f39c12;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 70px;
+            height: 70px;
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(90deg, #2c3e50, #3498db);">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+    </nav>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="text-center">
+            <div class="spinner"></div>
+            <h3 class="mt-3">Evaluating Answer...</h3>
+            <p>Analyzing with 4-layer AI model</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="evaluation-card">
+            <div class="card-header">
+                <h1 class="display-6 fw-bold">
+                    <i class="fas fa-search"></i> Evaluate Descriptive Answer
+                </h1>
+                <p class="mb-0">Enter question and answers for intelligent evaluation</p>
+            </div>
+
+            <div class="form-section">
+                <form id="evaluationForm">
+                    <!-- Question -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-question-circle"></i> Question
+                        </label>
+                        <textarea class="form-control" id="question" name="question"
+                            placeholder="Enter the descriptive question..." required></textarea>
+                    </div>
+
+                    <!-- Ideal Answer -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-star"></i> Ideal/Model Answer
+                        </label>
+                        <textarea class="form-control" id="ideal_answer" name="ideal_answer"
+                            placeholder="Enter the ideal or model answer for comparison..." required></textarea>
+                    </div>
+
+                    <!-- Student Answer -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-user-graduate"></i> Student Answer
+                        </label>
+                        <textarea class="form-control" id="student_answer" name="student_answer"
+                            placeholder="Enter the student's answer to evaluate..." required></textarea>
+                    </div>
+
+                    <!-- Quick Load Buttons -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-bolt"></i> Quick Load Sample
+                        </label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-outline-primary" onclick="loadSample(1)">
+                                Sample 1: Machine Learning
+                            </button>
+                            <button type="button" class="btn btn-outline-success" onclick="loadSample(2)">
+                                Sample 2: Photosynthesis
+                            </button>
+                            <button type="button" class="btn btn-outline-warning" onclick="loadSample(3)">
+                                Sample 3: Renewable Energy
+                            </button>
+                            <button type="button" class="btn btn-outline-info" onclick="clearForm()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-evaluate">
+                            <i class="fas fa-robot"></i> EVALUATE WITH AI
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Results Section -->
+                <div class="results-section" id="resultsSection">
+                    <h2 class="text-center mb-4">
+                        <i class="fas fa-chart-bar"></i> Evaluation Results
+                    </h2>
+
+                    <!-- Final Score -->
+                    <div class="text-center mb-4">
+                        <h4>Final Score</h4>
+                        <div class="score-display" id="finalScore">--</div>
+                        <div class="d-flex justify-content-center gap-2">
+                            <div class="confidence-badge" id="confidenceBadge"></div>
+                            <div class="accuracy-badge" id="accuracyBadge"></div>
+                        </div>
+                    </div>
+
+                    <!-- Diamond Graph (Radar Chart) -->
+                    <div class="row justify-content-center mb-4">
+                        <div class="col-md-8">
+                            <h5 class="text-center mb-3"><i class="fas fa-gem"></i> Evaluation Profile</h5>
+                            <div style="height: 300px;">
+                                <canvas id="radarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Layer Scores -->
+                    <h5 class="mt-4 mb-3">
+                        <i class="fas fa-layer-group"></i> Layer-wise Analysis
+                    </h5>
+
+                    <div id="layerScores">
+                        <!-- Filled by JavaScript -->
+                    </div>
+
+                    <!-- Feedback -->
+                    <div class="feedback-box">
+                        <h5><i class="fas fa-comment-dots"></i> Constructive Feedback</h5>
+                        <p id="feedbackText" class="mb-0">Evaluation feedback will appear here...</p>
+                    </div>
+
+                    <!-- Export Button -->
+                    <div class="mt-4 text-center">
+                        <button class="btn btn-outline-primary" onclick="exportResults()">
+                            <i class="fas fa-download"></i> Export Results
+                        </button>
+                        <button class="btn btn-outline-success" onclick="evaluateAnother()">
+                            <i class="fas fa-redo"></i> Evaluate Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-info-circle"></i> How Our 4-Layer Evaluation Works
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <div class="mb-3" style="color: #3498db; font-size: 2rem;">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <h6>Conceptual Layer</h6>
+                                    <p class="small">Identifies key concepts and terminology</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <div class="mb-3" style="color: #2ecc71; font-size: 2rem;">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <h6>Semantic Layer</h6>
+                                    <p class="small">Analyzes meaning and similarity</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <div class="mb-3" style="color: #9b59b6; font-size: 2rem;">
+                                        <i class="fas fa-project-diagram"></i>
+                                    </div>
+                                    <h6>Structural Layer</h6>
+                                    <p class="small">Evaluates organization and coherence</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3">
+                                    <div class="mb-3" style="color: #f39c12; font-size: 2rem;">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <h6>Completeness Layer</h6>
+                                    <p class="small">Checks coverage and thoroughness</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load sample question from home page if available
+        document.addEventListener('DOMContentLoaded', function () {
+            const sampleQuestion = sessionStorage.getItem('sampleQuestion');
+            if (sampleQuestion) {
+                const question = JSON.parse(sampleQuestion);
+                document.getElementById('question').value = question.question;
+                document.getElementById('ideal_answer').value = question.ideal;
+                sessionStorage.removeItem('sampleQuestion');
+            }
+        });
+
+        // Sample data
+        const samples = {
+            1: {
+                question: "What is machine learning?",
+                ideal: "Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed. It focuses on developing algorithms that can access data and use it to learn for themselves.",
+                student: "Machine learning is when computers learn from data to make predictions and decisions without being directly programmed."
+            },
+            2: {
+                question: "Explain the process of photosynthesis",
+                ideal: "Photosynthesis is the process by which green plants use sunlight to synthesize nutrients from carbon dioxide and water. It involves light-dependent reactions that capture energy and light-independent reactions (Calvin cycle) that produce glucose.",
+                student: "Photosynthesis is how plants make food using sunlight, water, and carbon dioxide. They produce oxygen as a byproduct."
+            },
+            3: {
+                question: "What are the advantages of renewable energy?",
+                ideal: "Renewable energy sources offer several advantages including reduced greenhouse gas emissions, sustainability, lower long-term costs, energy independence, job creation in the green sector, and reduced environmental impact compared to fossil fuels.",
+                student: "Renewable energy is good for the environment because it doesn't pollute and won't run out like oil and coal."
+            }
+        };
+
+        function loadSample(sampleId) {
+            const sample = samples[sampleId];
+            if (sample) {
+                document.getElementById('question').value = sample.question;
+                document.getElementById('ideal_answer').value = sample.ideal;
+                document.getElementById('student_answer').value = sample.student;
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('question').value = '';
+            document.getElementById('ideal_answer').value = '';
+            document.getElementById('student_answer').value = '';
+            document.getElementById('resultsSection').style.display = 'none';
+        }
+
+        // Handle form submission
+        document.getElementById('evaluationForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Show loading
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            const formData = new FormData(this);
+            const data = {
+                question: formData.get('question'),
+                ideal_answer: formData.get('ideal_answer'),
+                student_answer: formData.get('student_answer')
+            };
+
+            try {
+                const response = await fetch('/api/evaluate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(data)
+                });
+
+                const result = await response.json();
+
+                // Hide loading
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                // Show results
+                displayResults(result);
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert('Evaluation failed. Please try again.');
+            }
+        });
+
+        function displayResults(result) {
+            // Update final score
+            const finalScore = result.final_score;
+            const scoreDisplay = document.getElementById('finalScore');
+            scoreDisplay.textContent = finalScore;
+
+            // Set score color
+            scoreDisplay.className = 'score-display ';
+            if (finalScore >= 80) {
+                scoreDisplay.classList.add('score-excellent');
+            } else if (finalScore >= 60) {
+                scoreDisplay.classList.add('score-good');
+            } else if (finalScore >= 40) {
+                scoreDisplay.classList.add('score-average');
+            } else {
+                scoreDisplay.classList.add('score-poor');
+            }
+
+            // Update confidence
+            document.getElementById('confidenceBadge').innerHTML = `
+                <span class="badge bg-info p-2">Confidence: ${result.confidence}%</span>
+            `;
+
+            // Update Accuracy Level
+            let accuracyLevel = 'Low';
+            let accuracyColor = 'danger';
+            if (result.confidence >= 80) { accuracyLevel = 'High Accuracy'; accuracyColor = 'success'; }
+            else if (result.confidence >= 50) { accuracyLevel = 'Medium Accuracy'; accuracyColor = 'warning'; }
+
+            document.getElementById('accuracyBadge').innerHTML = `
+                <span class="badge bg-${accuracyColor} p-2"><i class="fas fa-crosshairs"></i> ${accuracyLevel}</span>
+            `;
+
+            // Render/Update Radar Chart (Diamond Graph)
+            const radarCtx = document.getElementById('radarChart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (window.evaluationRadarChart) {
+                window.evaluationRadarChart.destroy();
+            }
+
+            window.evaluationRadarChart = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Conceptual', 'Semantic', 'Structural', 'Completeness'],
+                    datasets: [{
+                        label: 'Evaluation Profile',
+                        data: [
+                            result.layer_scores.conceptual,
+                            result.layer_scores.semantic,
+                            result.layer_scores.structural,
+                            result.layer_scores.completeness
+                        ],
+                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        pointBackgroundColor: 'rgba(52, 152, 219, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(52, 152, 219, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    elements: {
+                        line: { borderWidth: 3 }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: {
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Update layer scores
+            const layerScoresDiv = document.getElementById('layerScores');
+            layerScoresDiv.innerHTML = '';
+
+            const layers = [
+                { key: 'conceptual', name: 'Conceptual', color: 'concept' },
+                { key: 'semantic', name: 'Semantic', color: 'semantic' },
+                { key: 'structural', name: 'Structural', color: 'structural' },
+                { key: 'completeness', name: 'Completeness', color: 'completeness' }
+            ];
+
+            layers.forEach(layer => {
+                const score = result.layer_scores[layer.key];
+                const weight = result.weights[layers.indexOf(layer)] * 100;
+
+                layerScoresDiv.innerHTML += `
+                    <div class="layer-score">
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                <strong>${layer.name} Understanding</strong>
+                                <small class="text-muted"> (Weight: ${weight.toFixed(1)}%)</small>
+                            </span>
+                            <span><strong>${score}/100</strong></span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-${layer.color}" 
+                                 style="width: ${score}%" 
+                                 role="progressbar">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Update feedback
+            document.getElementById('feedbackText').textContent = result.feedback;
+
+            // Show results section
+            document.getElementById('resultsSection').style.display = 'block';
+
+            // Smooth scroll to results
+            document.getElementById('resultsSection').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        function exportResults() {
+            // Simple export function
+            const score = document.getElementById('finalScore').textContent;
+            const feedback = document.getElementById('feedbackText').textContent;
+
+            const data = `Evaluation Results\n==================\n\n` +
+                `Final Score: ${score}/100\n` +
+                `Feedback: ${feedback}\n\n` +
+                `Generated by Intelligent Answer Evaluation System\n` +
+                `Government College of Engineering, Dharmapuri`;
+
+            const blob = new Blob([data], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'evaluation_results.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        function evaluateAnother() {
+            clearForm();
+            document.getElementById('question').focus();
+        }
+    </script>
+</body>
+
+</html>

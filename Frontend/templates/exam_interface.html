@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam: {{ exam.title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .noselect {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        body {
+            background-color: #f3f4f6;
+        }
+
+        .webcam-feed {
+            width: 150px;
+            height: 110px;
+            background-color: #000;
+            border-radius: 8px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            border: 2px solid #ef4444;
+        }
+    </style>
+</head>
+
+<body class="noselect">
+    <!-- Navbar -->
+    <nav class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Exam: {{ exam.title }}</h1>
+            <div class="text-red-400 font-bold text-xl" id="timer">00:00:00</div>
+        </div>
+    </nav>
+
+    <!-- Proctoring Warning -->
+    <div id="violation-banner" class="hidden bg-red-600 text-white text-center p-2 font-bold">
+        ⚠️ WARNING: Tab switch detected! This incident has been logged.
+    </div>
+
+    <!-- Webcam Feed (Simulated) -->
+    <div class="webcam-feed">
+        <video id="webcam" autoplay playsinline class="w-full h-full object-cover rounded"></video>
+        <div class="text-white text-xs text-center absolute bottom-0 w-full bg-black bg-opacity-50">Monitoring Active
+        </div>
+    </div>
+
+    <div class="container mx-auto p-6 max-w-4xl">
+        <!-- Exam Info -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <p class="text-gray-600">{{ exam.description }}</p>
+            <div class="mt-4 flex gap-4 text-sm text-gray-500">
+                <span><i class="fas fa-clock"></i> Duration: {{ exam.duration_minutes }} mins</span>
+                <span><i class="fas fa-list"></i> Questions: {{ question_count }}</span>
+                <span><i class="fas fa-shield-alt"></i> Strict Mode: {{ "On" if exam.strict_mode else "Off" }}</span>
+            </div>
+            <button id="start-btn" onclick="startExam()"
+                class="mt-6 w-full bg-green-600 text-white py-3 rounded font-bold hover:bg-green-700">
+                START EXAM
+            </button>
+        </div>
+
+        <!-- Questions Container (Hidden initially) -->
+        <div id="exam-content" class="hidden">
+            <form id="exam-form" onsubmit="submitExam(event)">
+                <input type="hidden" name="exam_id" value="{{ exam.id }}">
+
+                {% for q in questions %}
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Q{{
+                            loop.index }}</span>
+                        <span class="text-sm text-gray-500">{{ q.marks }} marks</span>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">{{ q.question_text }}</h3>
+
+                    <div class="mb-4">
+                        <textarea name="answer_{{ q.id }}"
+                            class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            rows="6" placeholder="Type your answer here..." required></textarea>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <button type="submit"
+                    class="w-full bg-blue-600 text-white py-3 rounded font-bold hover:bg-blue-700 text-lg mb-10">
+                    SUBMIT EXAM
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let examId = {{ exam.id }};
+        let duration = {{ exam.duration_minutes }} * 60;
+        let strictMode = {{ exam.strict_mode }};
+        let timerInterval;
+
+        // Prevent Right Click
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Prevent Copy/Paste
+        document.addEventListener('copy', e => e.preventDefault());
+        document.addEventListener('paste', e => e.preventDefault());
+
+        async function startExam() {
+            // Request Fullscreen
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                }
+            } catch (err) {
+                console.log("Fullscreen request denied");
+            }
+
+            // Start Webcam
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('webcam').srcObject = stream;
+            } catch (err) {
+                console.log("Camera access denied");
+                Swal.fire('Camera Required', 'Please allow camera access to start the exam.', 'warning');
+                return;
+            }
+
+            // Notify Backend
+            await fetch('/api/student/start-exam', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exam_id: examId })
+            });
+
+            // UI Changes
+            document.getElementById('start-btn').parentElement.classList.add('hidden');
+            document.getElementById('exam-content').classList.remove('hidden');
+
+            // Start Timer
+            startTimer(duration);
+
+            // Enable Tab Monitoring
+            if (strictMode) {
+                document.addEventListener("visibilitychange", handleVisibilityChange);
+            }
+        }
+
+        function startTimer(seconds) {
+            const timerDisplay = document.getElementById('timer');
+
+            timerInterval = setInterval(() => {
+                seconds--;
+
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = seconds % 60;
+
+                timerDisplay.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+                if (seconds <= 0) {
+                    clearInterval(timerInterval);
+                    submitExam(new Event('submit'));
+                }
+            }, 1000);
+        }
+
+        async function handleVisibilityChange() {
+            if (document.hidden) {
+                // Log Violation
+                await fetch('/api/student/log-violation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        exam_id: examId,
+                        violation_type: 'tab_switch'
+                    })
+                });
+
+                // Show Warning
+                const banner = document.getElementById('violation-banner');
+                banner.classList.remove('hidden');
+                setTimeout(() => banner.classList.add('hidden'), 5000);
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Proctoring Alert',
+                    text: 'You switched tabs! This incident has been logged.',
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
+        }
+
+        async function submitExam(e) {
+            e.preventDefault();
+            clearInterval(timerInterval);
+
+            // Collect answers
+            const formData = new FormData(document.getElementById('exam-form'));
+            const data = Object.fromEntries(formData.entries());
+
+            // For now, since we don't have a bulk submit endpoint, we submit individually
+            // Ideally we'd have a /api/student/submit-exam endpoint that takes all answers
+
+            Swal.fire({
+                title: 'Submitting...',
+                text: 'Please wait while we evaluate your answers',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Simulate submission (In production, replace with bulk submit)
+            // Here we just redirect to dashboard for demo purposes
+            setTimeout(() => {
+                window.location.href = '/student';
+            }, 2000);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+STUDENT PORTAL TEST RESULTS
+============================================================
+Login: OK
+PASS | /student | Status=200 | Size=14753
+PASS | /student/questions | Status=200 | Size=53721
+PASS | /student/performance | Status=200 | Size=36984
+PASS | /student/feedback | Status=200 | Size=71017
+PASS | /student/exams | Status=200 | Size=5566
+FAIL | /student/question/1 | Status=200 | Size=25893
+PASS | /student/assignment/1 | Status=200 | Size=13761
+============================================================

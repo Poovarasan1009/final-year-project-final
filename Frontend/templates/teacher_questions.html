@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Questions - TeacherHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#4F46E5', secondary: '#10B981', dark: '#1F2937' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.1), transparent);
+            color: #4F46E5;
+            border-right: 3px solid #4F46E5;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .q-row {
+            transition: all 0.2s ease;
+        }
+
+        .q-row:hover {
+            background: #f8fafc;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col z-10 shadow-lg">
+            <div class="p-6 flex items-center gap-3 border-b border-gray-100">
+                <div
+                    class="w-10 h-10 bg-gradient-to-br from-primary to-indigo-400 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-chalkboard-teacher text-white text-lg"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-gray-900">Teacher<span
+                        class="text-primary">Hub</span></span>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <div class="px-4 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Main</div>
+                <ul class="space-y-1 mb-6">
+                    <li><a href="/teacher"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-home w-6 text-sm"></i><span
+                                class="font-medium text-sm">Dashboard</span></a></li>
+                    <li><a href="/teacher/create-question"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-plus-circle w-6 text-sm"></i><span class="font-medium text-sm">Create
+                                Question</span></a></li>
+                    <li><a href="/teacher/questions"
+                            class="sidebar-link active flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-question-circle w-6 text-sm"></i><span class="font-medium text-sm">My
+                                Questions</span></a></li>
+                    <li><a href="/teacher/results"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-clipboard-check w-6 text-sm"></i><span class="font-medium text-sm">View
+                                Results</span></a></li>
+                </ul>
+                <div class="px-4 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Tools</div>
+                <ul class="space-y-1">
+                    <li><a href="/teacher/analytics"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-chart-bar w-6 text-sm"></i><span
+                                class="font-medium text-sm">Analytics</span></a></li>
+                    <li><a href="/teacher/students"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-users w-6 text-sm"></i><span
+                                class="font-medium text-sm">Students</span></a></li>
+                    <li><a href="/evaluate"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-robot w-6 text-sm"></i><span class="font-medium text-sm">AI
+                                Evaluator</span></a></li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-gray-100">
+                <div class="flex items-center gap-3 mb-3">
+                    <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-indigo-400 flex items-center justify-center text-white font-bold text-sm">
+                        {{ teacher_name[:1] }}</div>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-sm font-semibold text-gray-900 truncate">{{ teacher_name }}</p>
+                        <p class="text-xs text-gray-500">Teacher Account</p>
+                    </div>
+                </div>
+                <a href="/logout"
+                    class="block w-full text-center py-2 px-4 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"><i
+                        class="fas fa-sign-out-alt mr-1"></i> Log Out</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 relative">
+            <div
+                class="absolute top-0 left-0 w-full h-56 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 -z-10">
+            </div>
+
+            <div class="container mx-auto px-6 py-8 max-w-7xl">
+                <!-- Header -->
+                <header
+                    class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 text-white gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold"><i class="fas fa-question-circle mr-2"></i>My Questions</h1>
+                        <p class="text-indigo-200 mt-1">Manage all your created questions</p>
+                    </div>
+                    <a href="/teacher/create-question"
+                        class="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition-colors">
+                        <i class="fas fa-plus mr-1"></i> Create New Question
+                    </a>
+                </header>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-lg bg-indigo-50 flex items-center justify-center"><i
+                                    class="fas fa-list text-indigo-600"></i></div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">{{ questions | length }}</p>
+                                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Total</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-lg bg-green-50 flex items-center justify-center"><i
+                                    class="fas fa-check-double text-green-600"></i></div>
+                            <div>
+                                {% set answered_qs = questions | selectattr('answer_count', 'gt', 0) | list | length %}
+                                <p class="text-2xl font-bold text-green-600">{{ answered_qs }}</p>
+                                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Attempted</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-lg bg-amber-50 flex items-center justify-center"><i
+                                    class="fas fa-pen text-amber-600"></i></div>
+                            <div>
+                                {% set total_ans = questions | sum(attribute='answer_count') %}
+                                <p class="text-2xl font-bold text-amber-600">{{ total_ans }}</p>
+                                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Submissions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-lg bg-purple-50 flex items-center justify-center"><i
+                                    class="fas fa-bullseye text-purple-600"></i></div>
+                            <div>
+                                {% set all_avgs = questions | selectattr('avg_score', 'gt', 0) |
+                                map(attribute='avg_score') | list %}
+                                {% set overall_avg = (all_avgs | sum / all_avgs | length) if all_avgs else 0 %}
+                                <p class="text-2xl font-bold text-purple-600">{{ overall_avg | round(1) }}%</p>
+                                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Avg Score</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions Table -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700"><i
+                                class="fas fa-list-alt text-gray-400 mr-2"></i>All Questions</h3>
+                        <input type="text" id="searchInput" placeholder="Search questions..."
+                            class="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-400 w-64"
+                            oninput="filterTable()">
+                    </div>
+
+                    {% if questions %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Question</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Subject</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Difficulty</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Marks</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Submissions</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Avg Score</th>
+                                    <th
+                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-100">
+                                {% for q in questions %}
+                                <tr class="q-row hover:bg-gray-50 transition-colors"
+                                    data-text="{{ q.question_text | lower }}">
+                                    <td class="px-6 py-4">
+                                        <div class="max-w-xs">
+                                            <p class="text-sm font-medium text-gray-900 line-clamp-2">{{ q.question_text
+                                                }}</p>
+                                            {% if q.topic %}
+                                            <span
+                                                class="text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded mt-1 inline-block">{{
+                                                q.topic }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            class="text-xs bg-gray-100 text-gray-700 font-medium px-2.5 py-1 rounded-md">{{
+                                            q.subject }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            class="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full
+                                            {{ 'bg-green-50 text-green-700' if q.difficulty == 'easy' else ('bg-amber-50 text-amber-700' if q.difficulty == 'medium' else 'bg-red-50 text-red-700') }}">
+                                            <span
+                                                class="w-1.5 h-1.5 rounded-full {{ 'bg-green-500' if q.difficulty == 'easy' else ('bg-amber-500' if q.difficulty == 'medium' else 'bg-red-500') }}"></span>
+                                            {{ q.difficulty | title }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">{{
+                                        q.marks }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            class="text-sm font-bold {{ 'text-green-600' if q.answer_count > 0 else 'text-gray-400' }}">{{
+                                            q.answer_count }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {% if q.avg_score > 0 %}
+                                        <span
+                                            class="text-sm font-bold {{ 'text-green-600' if q.avg_score >= 80 else ('text-yellow-600' if q.avg_score >= 50 else 'text-red-500') }}">{{
+                                            q.avg_score }}%</span>
+                                        {% else %}
+                                        <span class="text-xs text-gray-400">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <button onclick="viewDetails({{ q | tojson }})"
+                                            class="text-indigo-600 hover:text-indigo-800 text-sm font-medium mr-3"
+                                            title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button onclick="deleteQuestion({{ q.id }})"
+                                            class="text-red-400 hover:text-red-600 text-sm font-medium" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-12 text-center">
+                        <div class="w-16 h-16 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-question text-indigo-400 text-2xl"></i>
+                        </div>
+                        <p class="text-gray-500 text-lg font-medium">No questions created yet</p>
+                        <p class="text-gray-400 text-sm mt-1">Create your first question to get started!</p>
+                        <a href="/teacher/create-question"
+                            class="inline-block mt-4 bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
+                            <i class="fas fa-plus mr-1"></i> Create Question
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm hidden overflow-y-auto h-full w-full"
+        style="z-index: 1050;">
+        <div class="relative top-10 mx-auto p-6 border w-11/12 md:w-2/3 lg:w-1/2 shadow-xl rounded-xl bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900" id="modalTitle">Question Details</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Question</p>
+                    <p class="text-sm text-gray-800 bg-gray-50 p-3 rounded-lg" id="modalQuestion"></p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-green-600 uppercase tracking-wider mb-1">Ideal Answer</p>
+                    <p class="text-sm text-green-800 bg-green-50 p-3 rounded-lg" id="modalIdeal"></p>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-gray-50 p-3 rounded-lg text-center">
+                        <p class="text-xs text-gray-500">Subject</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1" id="modalSubject"></p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg text-center">
+                        <p class="text-xs text-gray-500">Difficulty</p>
+                        <p class="text-sm font-semibold mt-1" id="modalDifficulty"></p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg text-center">
+                        <p class="text-xs text-gray-500">Submissions</p>
+                        <p class="text-sm font-semibold text-gray-800 mt-1" id="modalSubs"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 text-right">
+                <button onclick="closeModal()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function viewDetails(q) {
+            document.getElementById('modalQuestion').textContent = q.question_text;
+            document.getElementById('modalIdeal').textContent = q.ideal_answer || 'Not provided';
+            document.getElementById('modalSubject').textContent = q.subject;
+            document.getElementById('modalDifficulty').textContent = q.difficulty;
+            document.getElementById('modalSubs').textContent = q.answer_count;
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+
+        function deleteQuestion(id) {
+            if (confirm('Are you sure you want to delete this question?')) {
+                fetch('/api/teacher/delete-question', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question_id: id })
+                }).then(r => r.json()).then(d => {
+                    if (d.success) location.reload();
+                    else alert('Error: ' + (d.error || 'Could not delete'));
+                });
+            }
+        }
+
+        function filterTable() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.q-row').forEach(row => {
+                row.style.display = !search || row.dataset.text.includes(search) ? '' : 'none';
+            });
+        }
+
+        window.onclick = function (e) {
+            if (e.target === document.getElementById('detailModal')) closeModal();
+        };
+    </script>
+</body>
+
+</html>

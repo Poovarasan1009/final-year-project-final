@@ -1,0 +1,30 @@
+# Environment
+venv/
+.venv/
+env/
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases
+*.db
+*.sqlite3
+
+# IDEs
+.vscode/
+.idea/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Project Specific
+.gemini/
+.agent/
+brain/
+logs/
+Real_Dataset/*.csv
+!Real_Dataset/sample_dataset.csv

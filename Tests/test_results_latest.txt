@@ -1,0 +1,84 @@
+🚀 Using device: cpu
+[INFO] Loading AI models...
+[OK] Semantic model loaded (all-MiniLM-L6-v2)
+[OK] Contextual BERT model loaded
+[OK] Accuracy Engine (synonym-aware) loaded
+============================================================
+ANSWER EVALUATION SYSTEM - ACCURACY TEST SUITE
+============================================================
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [RESULT] Final Score: 69.51/100  Grade: C
+   [RESULT] Confidence: 78.1%
+
+[PASS] Test 1: Synonym: automobile = car
+  Score: 69.51/100  Grade: C  Marks: 7.0/10  Confidence: 78.1%
+  Synonym matches detected: [('automobile', 'car'), ('vehicle', 'car')]
+  Missing concepts: ['transportation', 'motorized']
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [RESULT] Final Score: 65.75/100  Grade: C
+   [RESULT] Confidence: 69.2%
+
+[PASS] Test 2: Correct answer - should score good (paraphrase)
+  Score: 65.75/100  Grade: C  Marks: 6.6/10  Confidence: 69.2%
+  Missing concepts: ['jobs', 'advantages', 'lowers', 'greenhouse']
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [RESULT] Final Score: 31.12/100  Grade: F
+   [RESULT] Confidence: 50.9%
+
+[PASS] Test 3: Wrong answer - should score LOW
+  Score: 31.12/100  Grade: F  Marks: 3.1/10  Confidence: 50.9%
+  Missing concepts: ['plants', 'growth', 'sunlight', 'well']
+
+[PASS] Test 4: Empty answer - should score 0
+  Score: 0.0/100  Grade: F  Marks: 0.0/10  Confidence: 0.0%
+
+[INFO] Evaluating answer...
+   [L1] Concept coverage (synonym-aware)...
+   [L2] Semantic meaning...
+   [L3] Structure & grammar...
+   [L4] Completeness...
+   [RESULT] Final Score: 76.45/100  Grade: B
+   [RESULT] Confidence: 73.9%
+
+[PASS] Test 5: Synonym: rapid = fast
+  Score: 76.45/100  Grade: B  Marks: 7.6/10  Confidence: 73.9%
+  Synonym matches detected: [('fast', 'rapid'), ('algorithm', 'method'), ('completes', 'finishes')]
+  Missing concepts: ['performance', 'describe', 'complexity']
+
+============================================================
+GRADE BAND TESTS
+============================================================
+  OK Score 95 -> Grade A+ (Outstanding)
+  OK Score 83 -> Grade A (Excellent)
+  OK Score 72 -> Grade B (Good)
+  OK Score 65 -> Grade C (Average)
+  OK Score 52 -> Grade D (Below Average)
+  OK Score 40 -> Grade E (Poor)
+  OK Score 20 -> Grade F (Fail)
+
+============================================================
+SYNONYM ENGINE TESTS
+============================================================
+  OK 'automobile' synonym of 'car'? Expected=True, Got=True
+  OK 'rapid' synonym of 'fast'? Expected=True, Got=True
+  OK 'happy' synonym of 'planet'? Expected=False, Got=False
+  OK 'purchase' synonym of 'buy'? Expected=True, Got=True
+
+============================================================
+ALL TESTS PASSED
+============================================================

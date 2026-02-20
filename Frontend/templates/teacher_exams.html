@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Management - TeacherHub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#4F46E5', secondary: '#10B981', dark: '#1F2937' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.1), transparent);
+            color: #4F46E5;
+            border-right: 3px solid #4F46E5;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(79, 70, 229, 0.05);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col z-10 shadow-lg">
+            <div class="p-6 flex items-center gap-3 border-b border-gray-100">
+                <div
+                    class="w-10 h-10 bg-gradient-to-br from-primary to-indigo-400 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-chalkboard-teacher text-white text-lg"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight text-gray-900">Teacher<span
+                        class="text-primary">Hub</span></span>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <div class="px-4 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Main</div>
+                <ul class="space-y-1 mb-6">
+                    <li><a href="/teacher"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-home w-6 text-sm"></i><span
+                                class="font-medium text-sm">Dashboard</span></a></li>
+                    <li><a href="/teacher/create-question"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-plus-circle w-6 text-sm"></i><span class="font-medium text-sm">Create
+                                Question</span></a></li>
+                    <li><a href="/teacher/questions"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-question-circle w-6 text-sm"></i><span class="font-medium text-sm">My
+                                Questions</span></a></li>
+                    <li><a href="/teacher/results"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-clipboard-check w-6 text-sm"></i><span class="font-medium text-sm">View
+                                Results</span></a></li>
+                </ul>
+                <div class="px-4 mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">Tools</div>
+                <ul class="space-y-1">
+                    <li><a href="/teacher/analytics"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-chart-bar w-6 text-sm"></i><span
+                                class="font-medium text-sm">Analytics</span></a></li>
+                    <li><a href="/teacher/students"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-users w-6 text-sm"></i><span
+                                class="font-medium text-sm">Students</span></a></li>
+                    <li><a href="/evaluate"
+                            class="sidebar-link flex items-center px-6 py-3 text-gray-600 transition-colors"><i
+                                class="fas fa-robot w-6 text-sm"></i><span class="font-medium text-sm">AI
+                                Evaluator</span></a></li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-gray-100">
+                <div class="flex items-center gap-3 mb-3">
+                    <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-indigo-400 flex items-center justify-center text-white font-bold text-sm">
+                        {{ teacher_name[:1] }}</div>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-sm font-semibold text-gray-900 truncate">{{ teacher_name }}</p>
+                        <p class="text-xs text-gray-500">Teacher Account</p>
+                    </div>
+                </div>
+                <a href="/logout"
+                    class="block w-full text-center py-2 px-4 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"><i
+                        class="fas fa-sign-out-alt mr-1"></i> Log Out</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 relative">
+            <div
+                class="absolute top-0 left-0 w-full h-56 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 -z-10">
+            </div>
+
+            <div class="container mx-auto px-6 py-8 max-w-7xl">
+                <!-- Header -->
+                <header
+                    class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 text-white gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold"><i class="fas fa-file-alt mr-2"></i>Exam Management</h1>
+                        <p class="text-indigo-200 mt-1">Create and manage timed exams for your students</p>
+                    </div>
+                    <a href="/teacher/create-exam"
+                        class="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition-colors">
+                        <i class="fas fa-plus mr-1"></i> Create New Exam
+                    </a>
+                </header>
+
+                <!-- Exams Grid -->
+                {% if exams %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {% for exam in exams %}
+                    <div
+                        class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                        <div class="h-1.5 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                        <div class="p-5">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ exam.title }}</h3>
+                            <p class="text-sm text-gray-500 mb-4 line-clamp-2">{{ exam.description }}</p>
+                            <div class="space-y-2 text-xs text-gray-500">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-clock text-indigo-400"></i>
+                                    <span>{{ exam.duration_minutes }} minutes</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-play text-green-400"></i>
+                                    <span>Start: {{ exam.start_time }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-stop text-red-400"></i>
+                                    <span>End: {{ exam.end_time }}</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-3 border-t border-gray-100 flex gap-3">
+                                <button class="text-xs text-indigo-600 hover:text-indigo-800 font-medium"><i
+                                        class="fas fa-edit mr-1"></i>Edit</button>
+                                <button class="text-xs text-green-600 hover:text-green-800 font-medium"><i
+                                        class="fas fa-chart-bar mr-1"></i>Results</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <!-- Empty State -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-16 text-center">
+                    <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mx-auto mb-5">
+                        <i class="fas fa-file-alt text-indigo-400 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">No Exams Created</h3>
+                    <p class="text-gray-400 text-sm mb-5">Create your first timed exam to get started</p>
+                    <a href="/teacher/create-exam"
+                        class="inline-block bg-indigo-600 text-white px-6 py-2.5 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
+                        <i class="fas fa-plus mr-1"></i> Create Your First Exam
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
