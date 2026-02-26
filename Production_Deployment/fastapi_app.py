@@ -127,7 +127,8 @@ except Exception as e:
         print("⚠ Using fallback evaluator")
         # Fallback evaluator
         class FallbackEvaluator:
-            def evaluate(self, question, ideal, student):
+            def evaluate(self, question, ideal, student, **kwargs):
+                max_marks = kwargs.get("max_marks", 10)
                 return {
                     "final_score": 75.0,
                     "confidence": 85.0,
@@ -138,7 +139,11 @@ except Exception as e:
                         "completeness": 85.0
                     },
                     "feedback": "Good answer overall. Could improve structure and add more examples.",
-                    "weights": [0.3, 0.4, 0.1, 0.2]
+                    "weights": [0.3, 0.4, 0.1, 0.2],
+                    "grade": "B",
+                    "grade_label": "Good",
+                    "marks_obtained": round(75.0 * max_marks / 100, 1),
+                    "max_marks": max_marks,
                 }
         evaluator = FallbackEvaluator()
 
@@ -906,9 +911,16 @@ async def teacher_students_page(request: Request):
     if not user or user.get('role') != 'teacher':
         return RedirectResponse(url="/")
     
+    try:
+        students = db.get_students_list()
+    except Exception as e:
+        print(f"Error loading students list: {e}")
+        students = []
+
     return templates.TemplateResponse("teacher_students.html", {
         "request": request,
-        "teacher_name": user.get('full_name', 'Teacher')
+        "teacher_name": user.get('full_name', 'Teacher'),
+        "students": students
     })
 
 @app.get("/teacher/analytics", response_class=HTMLResponse)
@@ -918,9 +930,20 @@ async def teacher_analytics_page(request: Request):
     if not user or user.get('role') != 'teacher':
         return RedirectResponse(url="/")
     
+    try:
+        analytics = db.get_class_analytics(user.get('id', 0))
+    except Exception as e:
+        print(f"Error loading analytics: {e}")
+        analytics = {
+            "active_students": 0, "total_submissions": 0, "avg_score": 0,
+            "topic_performance": [],
+            "layer_averages": {"conceptual": 0, "semantic": 0, "structural": 0, "completeness": 0}
+        }
+
     return templates.TemplateResponse("teacher_analytics.html", {
         "request": request,
-        "teacher_name": user.get('full_name', 'Teacher')
+        "teacher_name": user.get('full_name', 'Teacher'),
+        "analytics": analytics
     })
 
 # ==================== ADMIN ADDITIONAL ROUTES ====================

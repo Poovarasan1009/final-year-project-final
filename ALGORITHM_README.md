@@ -237,9 +237,41 @@ We introduced a specific methodology to calculate **AI Confidence** based on var
 | **Feedback** | Single Number | **Granular Diagnostics** (Specific advice per layer) |
 | **Reliability** | No Confidence Score | **Variance-Based Confidence Metric** |
 
+## 6. The Training Pipeline (How The AI Learns)
+
+To make this system intelligent, we built and trained our own **Deep Learning Neural Network** from scratch, rather than relying solely on pre-trained models.
+
+### Where does the data come from?
+1.  **Synthetic Data Generation (`generate_training_data.py`)**: 
+    Since getting thousands of real graded human exams is difficult, we wrote a script that generates realistic Q&A pairs.
+    *   It creates Ideal Answers.
+    *   It creates Student Answers with varying degrees of quality (Perfect, Partial, Poor, Irrelevant, Grammatically Incorrect).
+    *   It simulates a human "True Score" for each pair.
+    *   **Data Location**: This generated data is saved to `Advanced_Core/Saved_Models/training_dataset.csv`.
+
+### How is the Model Trained? (`train_model.py`)
+1.  **Feature Extraction**: The script reads the CSV data. For every answer, it runs our 4 semantic/structural layers to extract **7 Key Features** (e.g., Concept Score, Cosine Angle, Sentence Length).
+2.  **The Neural Architecture**: We use **PyTorch** to build a Multi-Layer Perceptron (MLP) Neural Network (`EvaluationNN`).
+    *   **Input Layer**: 7 Neurons (for the 7 features).
+    *   **Hidden Layers**: 16 and 8 Neurons respectively.
+    *   **Activation**: `ReLU` (Rectified Linear Unit) to capture non-linear scoring patterns.
+    *   **Regularization**: 20% Dropout is applied to prevent the model from memorizing the data (overfitting).
+    *   **Output Layer**: 1 Neuron (The Final Predicted Score from 0 to 1).
+3.  **The Training Algorithm**: 
+    *   The model guesses a score, checks it against the "True Score", and calculates the error using **MSE (Mean Squared Error)**.
+    *   It then updates its internal weights using the **Adam Optimizer** (learning rate 0.001) over 50 "Epochs" (full passes of the data).
+4.  **Final Model Location**: The trained weights (the "brain") are saved as `Advanced_Core/Saved_Models/evaluation_model.pth`. During a live evaluation, `neural_evaluator.py` loads this file to grade live students instantly.
+
+### Metrics & Graphs
+When training completes, the system plots the training and validation loss using `matplotlib`.
+*   These **Curve Matrices** prove that the model learned accurately.
+*   **Graph Location**: The visual graph is saved directly to `Advanced_Core/Saved_Models/training_curves.png`.
+
+---
+
          ********************************************************************
          # BENCHMARK: 4-Layer Hybrid Model vs Baseline Approaches
-                Dataset: Real_Dataset/sample_dataset.csv (Human-Scored)
+                Dataset: Advanced_Core/Saved_Models/training_dataset.csv
 
 
 *  .\venv\Scripts\python.exe Tests\benchmark_comparison.py

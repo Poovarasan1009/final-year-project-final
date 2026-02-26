@@ -2,9 +2,14 @@
 TOP 1% AI MODEL - Advanced Answer Evaluator (Production Grade)
 4-Layer Evaluation + Synonym-Aware Accuracy Engine
 """
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+# Torch is optional — if its native DLLs are broken we fall back to sklearn
+try:
+    import torch
+    import torch.nn as nn
+    import torch.nn.functional as F
+    TORCH_OK = True
+except Exception:
+    TORCH_OK = False
 import numpy as np
 import re
 from typing import Dict, List, Tuple
@@ -65,8 +70,12 @@ class AdvancedAnswerEvaluator:
     """
 
     def __init__(self, use_gpu: bool = False):
-        self.device = torch.device("cuda" if use_gpu and torch.cuda.is_available() else "cpu")
-        print(f"🚀 Using device: {self.device}")
+        if TORCH_OK:
+            self.device = torch.device("cuda" if use_gpu and torch.cuda.is_available() else "cpu")
+            print(f"🚀 Using device: {self.device}")
+        else:
+            self.device = None
+            print("[INFO] PyTorch unavailable — using sklearn/TF-IDF fallback mode")
 
         self.semantic_model = None
         self.transformer_model = None
@@ -83,6 +92,23 @@ class AdvancedAnswerEvaluator:
         except Exception as e:
             print(f"[WARN] Accuracy engine warn: {e}")
             self.accuracy_engine = None
+
+        # Load Custom Deep Learning Neural Evaluator (requires working torch)
+        self.neural_evaluator = None
+        if TORCH_OK:
+            try:
+                from Advanced_Core.neural_evaluator import NeuralEvaluator
+                self.neural_evaluator = NeuralEvaluator()
+                if self.neural_evaluator.is_loaded():
+                    print("[OK] Custom DL Neural Evaluator loaded")
+                else:
+                    print("[INFO] Neural evaluator not trained yet — using rule-based scoring")
+                    self.neural_evaluator = None
+            except Exception as e:
+                print(f"[WARN] Neural evaluator warn: {e}")
+                self.neural_evaluator = None
+        else:
+            print("[INFO] Neural evaluator skipped (PyTorch unavailable)")
 
         # Academic vocabulary (domain-specific boost terms)
         self.academic_terms = {
@@ -125,7 +151,9 @@ class AdvancedAnswerEvaluator:
 
         try:
             from sentence_transformers import SentenceTransformer
-            self.semantic_model = SentenceTransformer('all-MiniLM-L6-v2').to(self.device)
+            self.semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
+            if self.device and TORCH_OK:
+                self.semantic_model = self.semantic_model.to(self.device)
             print("[OK] Semantic model loaded (all-MiniLM-L6-v2)")
         except Exception as e:
             print(f"[WARN] Semantic model not available: {e}")
@@ -265,7 +293,7 @@ class AdvancedAnswerEvaluator:
         question_type = self.classify_question(question_orig)
         weights = self.get_dynamic_weights(question_type)
 
-        # ── Final Score ──
+        # ── Final Score (Rule-Based) ──
         raw_score = (
             weights[0] * concept_score +
             weights[1] * semantic_score +
@@ -285,8 +313,38 @@ class AdvancedAnswerEvaluator:
             semantic_floor = semantic_score * 0.75
             raw_score = max(raw_score, semantic_floor)
 
+        rule_based_score = min(raw_score * 100, 100.0)
 
-        final_score = min(raw_score * 100, 100.0)
+        # ── Neural Network Prediction (Deep Learning) ──
+        neural_score = None
+        if self.neural_evaluator and self.neural_evaluator.is_loaded():
+            ideal_words = len(ideal_orig.split())
+            student_words = len(student_orig.split())
+            word_count_ratio = min(student_words / max(ideal_words, 1), 2.0)
+
+            nn_features = {
+                "concept_score": concept_score,
+                "semantic_score": semantic_score,
+                "structure_score": structure_score,
+                "completeness_score": completeness_score,
+                "word_count_ratio": word_count_ratio,
+                "accuracy_boost": accuracy_boost,
+                "concept_phrase_score": concept_phrase_score,
+            }
+            neural_score = self.neural_evaluator.predict(nn_features)
+            print(f"   [DL] Neural model prediction: {neural_score:.2f}")
+
+        # ── Hybrid Score: Blend Rule-Based + Neural ──
+        if neural_score is not None:
+            # 25% Neural Network + 75% Rule-Based for stability
+            blended = 0.25 * neural_score + 0.75 * rule_based_score
+            # Safety floor: neural model cannot drag score more than 15 pts below rule-based
+            final_score = max(blended, rule_based_score - 15.0)
+            print(f"   [HYBRID] Rule={rule_based_score:.2f}, Neural={neural_score:.2f}, Final={final_score:.2f}")
+        else:
+            final_score = rule_based_score
+
+        final_score = max(0.0, min(final_score, 100.0))
 
         # ── Grade & Marks ──
         grade_info = get_grade_band(final_score)
@@ -449,61 +507,52 @@ class AdvancedAnswerEvaluator:
 
         if self.semantic_model is not None:
             try:
-                ideal_emb   = self.semantic_model.encode(ideal,   convert_to_tensor=True)
-                student_emb = self.semantic_model.encode(student, convert_to_tensor=True)
+                import numpy as _np
+                # encode to numpy arrays (works with or without torch)
+                ideal_emb   = self.semantic_model.encode(ideal,   convert_to_tensor=False)
+                student_emb = self.semantic_model.encode(student, convert_to_tensor=False)
 
-                cos_sim = F.cosine_similarity(
-                    ideal_emb.unsqueeze(0),
-                    student_emb.unsqueeze(0)
-                ).item()
+                # Cosine similarity via numpy
+                def _cosine(a, b):
+                    denom = (_np.linalg.norm(a) * _np.linalg.norm(b))
+                    return float(_np.dot(a, b) / denom) if denom > 0 else 0.0
 
-                # Map [-1,1] → [0,1]: correct paraphrases cluster around 0.4-0.6
-                # Use softer power (0.6) so 0.47 maps to ~0.53 instead of 0.43
+                cos_sim = _cosine(ideal_emb, student_emb)
                 full_score = max(0.0, cos_sim) ** 0.6
 
-                # ── Phrase-Level Similarity ──────────────────────────────────
-                # Extract key phrases from ideal (noun-phrases approx by window of 3-5 words)
-                ideal_words = ideal.split()
+                # Phrase-level similarity
+                import re as _re
+                ideal_words_list = ideal.split()
                 phrases = []
-                # Sliding window: 4-word and 6-word chunks from ideal
                 for window in (4, 6):
-                    for i in range(0, len(ideal_words) - window + 1, 2):
-                        phrase = ' '.join(ideal_words[i:i+window])
+                    for i in range(0, len(ideal_words_list) - window + 1, 2):
+                        phrase = ' '.join(ideal_words_list[i:i+window])
                         if len(phrase.split()) >= 3:
                             phrases.append(phrase)
-
-                # Also add individual sentences from ideal
-                import re as _re
                 ideal_sentences = [s.strip() for s in _re.split(r'[.;,]', ideal) if len(s.strip()) > 10]
                 phrases.extend(ideal_sentences)
 
-                if phrases and len(phrases) > 0:
-                    phrase_embs = self.semantic_model.encode(phrases, convert_to_tensor=True)
-                    student_emb_2 = self.semantic_model.encode(student, convert_to_tensor=True)
-                    # Cosine similarity of each phrase to student answer
-                    sims = F.cosine_similarity(
-                        phrase_embs,
-                        student_emb_2.unsqueeze(0).expand(len(phrases), -1)
-                    )
-                    best_phrase_cos = float(sims.max().item())
+                if phrases:
+                    phrase_embs   = self.semantic_model.encode(phrases, convert_to_tensor=False)
+                    student_emb_2 = self.semantic_model.encode(student, convert_to_tensor=False)
+                    sims = [_cosine(pe, student_emb_2) for pe in phrase_embs]
+                    best_phrase_cos = max(sims)
                     phrase_score = max(0.0, best_phrase_cos) ** 0.6
                 else:
                     phrase_score = full_score
 
-                # Final semantic = weighted best of full vs phrase
-                # Phrase wins when it's higher (paraphrase case)
                 final_semantic = max(
-                    0.65 * full_score + 0.35 * phrase_score,   # weighted average
-                    0.40 * full_score + 0.60 * phrase_score    # phrase-favoured avg
+                    0.65 * full_score + 0.35 * phrase_score,
+                    0.40 * full_score + 0.60 * phrase_score
                 )
 
                 details = {
-                    'method':             'sentence_transformer + phrase',
-                    'cosine_similarity':  round(cos_sim, 4),
-                    'full_score':         round(full_score, 4),
-                    'phrase_score':       round(phrase_score, 4),
-                    'normalized_score':   round(final_semantic, 4),
-                    'model':              'all-MiniLM-L6-v2'
+                    'method':            'sentence_transformer + phrase (numpy)',
+                    'cosine_similarity': round(cos_sim, 4),
+                    'full_score':        round(full_score, 4),
+                    'phrase_score':      round(phrase_score, 4),
+                    'normalized_score':  round(final_semantic, 4),
+                    'model':             'all-MiniLM-L6-v2'
                 }
                 return final_semantic, details
 
